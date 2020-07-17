@@ -54,7 +54,6 @@ class QuestionWithCode(Question):
 class Quiz:
     def __init__(self):
         self.simple_questions = Path(config.get("app")["questions_path"])
-        print(self.simple_questions)
         self.questions_with_code = Path(config.get("app")["coding_path"])
         self.telebot = telebot.TeleBot(os.getenv("TELEGRAM_BOT_TOKEN"))
         self.chat_id = os.getenv("TELEGRAM_CHAT_ID")
