@@ -1,7 +1,7 @@
 {
   "title": "Выберите правильный синтаксис для вывода текста \"Hello, World!\" в Python 3",
   "options": [
-    "echo \"Hello World\"", "p(\"Hello World\")", "print(\"Hello World\")", "echo(\"Hello World\");"
+    "echo \"Hello World\"", "p(\"Hello World\")", "print(\"Hello World\")", "echo(\"Hello World\");", "print \"Hello World\""
   ],
   "correct_option_id": 2,
   "explanation": "Начиная с 3й версии Python, у print должны быть скобки - print(\"text\")."
