@@ -131,3 +131,4 @@ dmypy.json
 images/*.jpg
 images/*.png
 *.ini
+test.py
