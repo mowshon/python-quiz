@@ -131,4 +131,5 @@ dmypy.json
 images/*.jpg
 images/*.png
 *.ini
+*.db
 test.py

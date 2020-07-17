@@ -23,9 +23,9 @@ class Question(BaseModel):
     # Путь к JSON файлу вопроса
     json_file = CharField()
     # Путь к сгенерированной изображении с кодом
-    image = CharField()
+    image = CharField(null=True)
     # ID сообщения в Telegram
-    message_id = IntegerField()
+    message_id = IntegerField(null=True)
     created_on = TimestampField()
 
     class Meta:
