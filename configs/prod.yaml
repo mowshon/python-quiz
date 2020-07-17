@@ -1,0 +1,11 @@
+
+app:
+  db_path: "/opt/app"
+  db_filename: "base.sqlite"
+  questions_path: "/opt/app/questions"
+  images_path: "/opt/app/images"
+  coding_path: "/opt/app/coding"
+
+environment:
+  TELEGRAM_BOT_TOKEN: "TOKEN_HERE"
+  TELEGRAM_CHAT_ID: "CHAT ID HERE"

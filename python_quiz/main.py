@@ -1,8 +1,15 @@
+#! /usr/bin/env python3
+
+import os
+from config_reader import get_config
 from quiz import Quiz
 from database import Question as DBQ
 
 
 if __name__ == '__main__':
+    config = get_config()
+    os.environ.update(config.get('environment', {}))
+
     quiz = Quiz()
 
     for q in quiz.get_all_quiz():

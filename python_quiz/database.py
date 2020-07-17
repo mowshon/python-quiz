@@ -1,12 +1,14 @@
+from pathlib import Path, PurePath
+
 from peewee import SqliteDatabase, Model
 from peewee import IntegerField, CharField, PrimaryKeyField, TimestampField
-from pathlib import Path
-from configparser import ConfigParser
 
-config = ConfigParser()
-config.read("config.ini", encoding="utf-8")
+from config_reader import get_config
 
-db = SqliteDatabase(Path.cwd() / config.get('database', 'file'))
+config: dict = get_config()
+
+db_file_path = Path(config.get("app")['db_path']) / config.get("app")['db_filename']
+db = SqliteDatabase(db_file_path)
 
 
 class BaseModel(Model):

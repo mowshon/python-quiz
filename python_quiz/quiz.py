@@ -1,11 +1,16 @@
-from pathlib import Path
-from glob import glob
+import os
 import json
 import hashlib
-import telebot
-from database import config
-from database import Question as DBQ
+from pathlib import Path
+from glob import glob
 from time import time
+
+import telebot
+
+from config_reader import get_config
+from database import Question as DBQ
+
+config: dict = get_config()
 
 
 class Question:
@@ -48,10 +53,11 @@ class QuestionWithCode(Question):
 
 class Quiz:
     def __init__(self):
-        self.simple_questions = Path.cwd() / "questions"
-        self.questions_with_code = Path.cwd() / "coding"
-        self.telebot = telebot.TeleBot(config.get('telegram', 'token'))
-        self.chat_id = config.get('telegram', 'chat_id')
+        self.simple_questions = Path(config.get("app")["questions_path"])
+        print(self.simple_questions)
+        self.questions_with_code = Path(config.get("app")["coding_path"])
+        self.telebot = telebot.TeleBot(os.getenv("TELEGRAM_BOT_TOKEN"))
+        self.chat_id = os.getenv("TELEGRAM_CHAT_ID")
 
     def get_all_quiz(self) -> list:
         """
