@@ -1,0 +1,8 @@
+{
+  "question": "Выберите правильный синтаксис для вывода текста \"Hello, World!\" в Python 3",
+  "answers": [
+    "echo \"Hello World\"", "p(\"Hello World\")", "print(\"Hello World\")", "echo(\"Hello World\");"
+  ],
+  "correct_answer": 2,
+  "explanation": "Начиная с 3й версии Python, у print должны быть скобки - print(\"text\")."
+}
