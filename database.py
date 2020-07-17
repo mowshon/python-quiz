@@ -1,5 +1,5 @@
 from peewee import SqliteDatabase, Model
-from peewee import IntegerField, CharField, PrimaryKeyField, TimestampField, TextField
+from peewee import IntegerField, CharField, PrimaryKeyField, TimestampField
 from pathlib import Path
 from configparser import ConfigParser
 
