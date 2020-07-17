@@ -53,20 +53,37 @@ class Quiz:
         self.telebot = telebot.TeleBot(config.get('telegram', 'token'))
         self.chat_id = config.get('telegram', 'chat_id')
 
-    def check_for_new_quiz(self):
+    def get_all_quiz(self) -> list:
+        """
+        Получаем список всех вопросов которые есть.
+        :return: Получаем список всех вопросов которые есть.
+        """
         return self.check_for_simple_quiz()
 
-    def check_for_simple_quiz(self):
+    def check_for_simple_quiz(self) -> list:
+        """
+        Проверяем только обычные опросы из папки questions
+        :return: Получаем список обычных опросов.
+        """
         result = []
         for filepath in glob(str(self.simple_questions / "*.json")):
             result.append(Question(filepath))
 
         return result
 
-    def publish(self, question):
+    def publish(self, question) -> None:
+        """
+        Публикуем данные из объекта Question в Telegram и сохраняем запись в SQLite базу данных.
+        :param question: объект Question или QuestionWithCode
+        :return: None
+        """
+        # ID всех опубликованных сообщений в Telegram которые связаны с данным опросом.
         messages_id = []
 
         if not question.is_code:
+            """
+            Если это простой опрос, тогда публикуем его сразу.
+            """
             post = self.telebot.send_poll(
                 chat_id=self.chat_id,
                 question=question.title,
@@ -88,6 +105,12 @@ class Quiz:
         })
 
     def delete_messages(self, messages):
+        """
+        Если это был вопрос с кодом, тогда будут два ID сообщений т.к. первый ID это отправленное изображение
+        второй ID сам опрос.
+        :param messages: Строка с ID опубликованных сообщений из Telegram
+        :return: void
+        """
         for message_id in messages.split(','):
             message_id = message_id.strip()
             self.telebot.delete_message(self.chat_id, message_id=message_id)
