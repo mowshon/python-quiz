@@ -6,6 +6,9 @@ import telebot
 from database import config
 from database import Question as DBQ
 from time import time
+import os
+from code2image.cls import Code2ImageBackground
+from io import BytesIO
 
 
 class Question:
@@ -24,26 +27,53 @@ class Question:
 
     def __init__(self, filepath):
         self.filepath = filepath
-        self.question_file = open(filepath, 'r')
-        self.file_content = self.question_file.read().strip()
+        question_file = open(filepath, 'r')
+        self.file_content = question_file.read().strip()
+        self.structure = json.loads(self.file_content)
         self.load_from_json()
-        self.question_file.close()
+        question_file.close()
 
     def load_from_json(self):
-        structure = json.loads(self.file_content)
         self.short_filepath = '/'.join(self.filepath.split('/')[-2:])
-        self.title = structure['title']
-        self.options = structure['options']
-        self.correct_option_id = structure['correct_option_id']
-        self.explanation = structure['explanation']
+        self.title = self.structure['title']
+        self.options = self.structure['options']
+        self.correct_option_id = self.structure['correct_option_id']
+        self.explanation = self.structure['explanation']
         self.checksum = hashlib.md5(f"{self.short_filepath}{self.file_content}".encode()).hexdigest()
 
 
 class QuestionWithCode(Question):
 
+    def __init__(self, question_filepath, code_filepath):
+        super().__init__(question_filepath)
+        self.code = self.load_code(code_filepath)
+        self.checksum = hashlib.md5(f"{self.short_filepath}{self.file_content}{self.code}".encode()).hexdigest()
+
     def load_from_json(self):
         super().load_from_json()
         self.is_code = True
+
+    @staticmethod
+    def load_code(code_filepath):
+        with open(code_filepath) as f:
+            code = f.read()
+
+        return code
+
+    def code_highlight(self):
+        c2i = Code2ImageBackground(
+            code_bg=config.get('highlight', 'code_bg'),
+            img_bg=config.get('highlight', 'img_bg'),
+            line_numbers=config.get('highlight', 'line_numbers'),
+            shadow_dt=int(config.get('highlight', 'shadow_dt')),
+            shadow_color=config.get('highlight', 'shadow_color'),
+        )
+        with BytesIO() as output:
+            img = c2i.highlight(self.code)
+            img.save(output, format='BMP')
+            data = output.getvalue()
+
+        return data
 
 
 class Quiz:
@@ -58,9 +88,9 @@ class Quiz:
         Получаем список всех вопросов которые есть.
         :return: Получаем список всех вопросов которые есть.
         """
-        return self.check_for_simple_quiz()
+        return self.checking_for_simple_quiz() + self.checking_for_quiz_with_code()
 
-    def check_for_simple_quiz(self) -> list:
+    def checking_for_simple_quiz(self) -> list:
         """
         Проверяем только обычные опросы из папки questions
         :return: Получаем список обычных опросов.
@@ -68,6 +98,21 @@ class Quiz:
         result = []
         for filepath in glob(str(self.simple_questions / "*.json")):
             result.append(Question(filepath))
+
+        return result
+
+    def checking_for_quiz_with_code(self) -> list:
+        """
+        Проверяем наличие опросов с кодом.
+        :return: Список вопросов с примером кода.
+        """
+        result = []
+        for folder in glob(str(self.questions_with_code / "*")):
+            question_file = os.path.join(folder, 'question.json')
+            file_with_code = glob(os.path.join(folder, 'code.*'))[0]
+
+            if os.path.exists(question_file) and os.path.exists(file_with_code):
+                result.append(QuestionWithCode(question_file, file_with_code))
 
         return result
 
@@ -80,21 +125,29 @@ class Quiz:
         # ID всех опубликованных сообщений в Telegram которые связаны с данным опросом.
         messages_id = []
 
-        if not question.is_code:
+        if question.is_code:
             """
-            Если это простой опрос, тогда публикуем его сразу.
+            Для вопроса с кодом, мы отправим две сообщения, одну с изображением кода другую с опросом.
             """
-            post = self.telebot.send_poll(
+            send_image = self.telebot.send_photo(
                 chat_id=self.chat_id,
-                question=question.title,
-                is_anonymous=question.is_anonymous,
-                options=question.options,
-                type=question.q_type,
-                correct_option_id=question.correct_option_id,
-                explanation=question.explanation
+                photo=question.code_highlight(),
+                caption=question.title
             )
 
-            messages_id.append(str(post.message_id))
+            messages_id.append(str(send_image.message_id))
+
+        post = self.telebot.send_poll(
+            chat_id=self.chat_id,
+            question=question.title,
+            is_anonymous=question.is_anonymous,
+            options=question.options,
+            type=question.q_type,
+            correct_option_id=question.correct_option_id,
+            explanation=question.explanation
+        )
+
+        messages_id.append(str(post.message_id))
 
         DBQ.create(**{
             'title': question.title,
