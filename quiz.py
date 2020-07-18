@@ -22,7 +22,6 @@ class Question:
     explanation = ""
     checksum = None
     is_code = False
-    image = ''
     code = ''
 
     def __init__(self, filepath):
@@ -44,7 +43,10 @@ class Question:
 
 class QuestionWithCode(Question):
 
+    code_filepath = None
+
     def __init__(self, question_filepath, code_filepath):
+        self.code_filepath = code_filepath
         super().__init__(question_filepath)
         self.code = self.load_code(code_filepath)
         self.checksum = hashlib.md5(f"{self.short_filepath}{self.file_content}{self.code}".encode()).hexdigest()
@@ -61,19 +63,41 @@ class QuestionWithCode(Question):
         return code
 
     def code_highlight(self):
+        """
+        Стилизуем код из файла.
+        :return: Изображение в бинарном виде.
+        """
         c2i = Code2ImageBackground(
             code_bg=config.get('highlight', 'code_bg'),
             img_bg=config.get('highlight', 'img_bg'),
-            line_numbers=config.get('highlight', 'line_numbers'),
             shadow_dt=int(config.get('highlight', 'shadow_dt')),
             shadow_color=config.get('highlight', 'shadow_color'),
         )
+
+        # Добавление нумерации строк
+        if int(config.get('highlight', 'show_line_numbers')):
+            content = self.add_line_number()
+        else:
+            content = self.code
+
         with BytesIO() as output:
-            img = c2i.highlight(self.code)
-            img.save(output, format='BMP')
+            img = c2i.highlight(content)
+            img.save(output, format='PNG')
             data = output.getvalue()
 
         return data
+
+    def add_line_number(self) -> str:
+        content = ''
+        with open(self.code_filepath) as f:
+            lines = f.readlines()
+
+        total_numbers = len(str(len(lines)))
+        for n, line in enumerate(lines, start=1):
+            spaces = ' ' * (total_numbers - len(str(n)))
+            content += f'{spaces}{n}| {line}'
+
+        return content
 
 
 class Quiz:
