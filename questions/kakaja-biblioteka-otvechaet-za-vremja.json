@@ -1,0 +1,8 @@
+{
+  "title": "Какая библиотека отвечает за время?",
+  "options": [
+    "time", "Time", "clock", "localtime"
+  ],
+  "correct_option_id": 0,
+  "explanation": ""
+}

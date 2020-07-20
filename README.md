@@ -16,4 +16,5 @@ img_bg = #5b81e3
 show_line_numbers = 1
 shadow_dt = 1
 shadow_color = #111111
+start_comment_with = #
 ```

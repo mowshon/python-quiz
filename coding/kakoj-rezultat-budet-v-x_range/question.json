@@ -1,0 +1,8 @@
+{
+  "title": "Какой результат будет в переменной x_range ?",
+  "options": [
+    "[0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5]", "[0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]", "TypeError: 'float' object cannot be interpreted as an integer"
+  ],
+  "correct_option_id": 2,
+  "explanation": "TypeError: объект 'float' не может быть интерпретирован как целое число"
+}

@@ -1,0 +1,8 @@
+{
+  "title": "Что выведет данный код?",
+  "options": [
+    "20", "Вернет ошибку", "True", "30"
+  ],
+  "correct_option_id": 3,
+  "explanation": ""
+}

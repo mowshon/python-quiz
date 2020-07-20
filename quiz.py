@@ -30,6 +30,9 @@ class Question:
         self.file_content = question_file.read().strip()
         self.structure = json.loads(self.file_content)
         self.load_from_json()
+
+        self.start_comment_with = config.get('highlight', 'start_comment_with')
+
         question_file.close()
 
     def load_from_json(self):
@@ -78,7 +81,7 @@ class QuestionWithCode(Question):
         if int(config.get('highlight', 'show_line_numbers')):
             content = self.add_line_number()
         else:
-            content = self.code
+            content = f'{self.start_comment_with} {self.title}\n{self.code}'
 
         with BytesIO() as output:
             img = c2i.highlight(content)
@@ -89,13 +92,17 @@ class QuestionWithCode(Question):
 
     def add_line_number(self) -> str:
         content = ''
+        lines = [f'{self.start_comment_with} {self.title}\n']
         with open(self.code_filepath) as f:
-            lines = f.readlines()
+            lines += f.readlines()
 
         total_numbers = len(str(len(lines)))
         for n, line in enumerate(lines, start=1):
             spaces = ' ' * (total_numbers - len(str(n)))
-            content += f'{spaces}{n}| {line}'
+            if len(lines) >= 4:
+                content += f'{spaces}{n}| {line}'
+            else:
+                content += line
 
         return content
 

@@ -1,0 +1,8 @@
+{
+  "title": "Каков будет вывод для var[2::-1] ?",
+  "options": [
+    "Jam", "dno", "maJ", "dnoB semaJ"
+  ],
+  "correct_option_id": 2,
+  "explanation": ""
+}

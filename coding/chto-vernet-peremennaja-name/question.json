@@ -1,0 +1,8 @@
+{
+  "title": "Что вернет переменная name ?",
+  "options": [
+    "JamesJamesJamesJamesJamesJames", "JamesJamesJamesJamesJames", "Error: invalid syntax"
+  ],
+  "correct_option_id": 0,
+  "explanation": ""
+}

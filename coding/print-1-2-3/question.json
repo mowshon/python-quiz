@@ -1,0 +1,8 @@
+{
+  "title": "Что напечатает следующий код?",
+  "options": [
+    "Ошибка", "False", "None", "True"
+  ],
+  "correct_option_id": 3,
+  "explanation": ""
+}
