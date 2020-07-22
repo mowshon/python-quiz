@@ -175,10 +175,16 @@ class Quiz:
             """
             Для вопроса с кодом, мы отправим две сообщения, одну с изображением кода другую с опросом.
             """
+            if question.show_title_in_code:
+                # Не дублировать вопрос в описании изображения, он уже есть в самой изображении.
+                image_caption = edit_question_html
+            else:
+                image_caption = f'{question.title}\n\n{edit_question_html}'
+
             send_image = self.telebot.send_photo(
                 chat_id=self.chat_id,
                 photo=question.code_highlight(),
-                caption=f'{question.title}\n\n{edit_question_html}',
+                caption=image_caption,
                 parse_mode='html'
             )
 
@@ -191,7 +197,7 @@ class Quiz:
             options=question.options,
             type=question.q_type,
             correct_option_id=question.correct_option_id,
-            explanation=question.explanation
+            explanation=question.explanation,
         )
 
         messages_id.append(str(post.message_id))
@@ -227,7 +233,7 @@ class Quiz:
         if question.is_code:
             edit_question = f'{github}/tree/master/coding/{question.short_filepath}'
             edit_code = f'{github}/tree/master/coding/{question.short_code_filepath}'
-            return f'<b>Заметили ошибку? Редактировать:</b> <a href="{edit_question}">вопрос</a> '\
+            return f'<b>Заметили ошибку?</b> Редактировать: <a href="{edit_question}">вопрос</a> '\
                    f'или <a href="{edit_code}">код</a>'
         else:
             edit_question = f'{github}/tree/master/{question.short_filepath}'
