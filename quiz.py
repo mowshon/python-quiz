@@ -43,12 +43,14 @@ class Question:
 class QuestionWithCode(Question):
 
     code_filepath = None
+    short_code_filepath = None
     start_comment_with = ''
     show_title_in_code = False
     language = 'python'
 
     def __init__(self, question_filepath, code_filepath):
         self.code_filepath = code_filepath
+        self.short_code_filepath = '/'.join(self.code_filepath.split('/')[-2:])
         super().__init__(question_filepath)
 
         # Символ с которого нужно начинать комментарий
@@ -167,6 +169,8 @@ class Quiz:
         # ID всех опубликованных сообщений в Telegram которые связаны с данным опросом.
         messages_id = []
 
+        edit_question_html = self.edit_this_question(question)
+
         if question.is_code:
             """
             Для вопроса с кодом, мы отправим две сообщения, одну с изображением кода другую с опросом.
@@ -174,7 +178,8 @@ class Quiz:
             send_image = self.telebot.send_photo(
                 chat_id=self.chat_id,
                 photo=question.code_highlight(),
-                caption=question.title
+                caption=f'{question.title}\n\n{edit_question_html}',
+                parse_mode='html'
             )
 
             messages_id.append(str(send_image.message_id))
@@ -190,6 +195,12 @@ class Quiz:
         )
 
         messages_id.append(str(post.message_id))
+
+        if not question.is_code:
+            edit = self.telebot.send_message(
+                chat_id=self.chat_id, text=edit_question_html, parse_mode='html', disable_web_page_preview=True
+            )
+            messages_id.append(str(edit.message_id))
 
         DBQ.create(**{
             'title': question.title,
@@ -209,3 +220,15 @@ class Quiz:
         for message_id in messages.split(','):
             message_id = message_id.strip()
             self.telebot.delete_message(self.chat_id, message_id=message_id)
+
+    @staticmethod
+    def edit_this_question(question):
+        github = config.get('telegram').get('github')
+        if question.is_code:
+            edit_question = f'{github}/tree/master/coding/{question.short_filepath}'
+            edit_code = f'{github}/tree/master/coding/{question.short_code_filepath}'
+            return f'<b>Заметили ошибку? Редактировать:</b> <a href="{edit_question}">вопрос</a> '\
+                   f'или <a href="{edit_code}">код</a>'
+        else:
+            edit_question = f'{github}/tree/master/{question.short_filepath}'
+            return f'👆 <b>Заметили ошибку?</b> <a href="{edit_question}">Редактировать вопрос</a>'
