@@ -1,12 +1,11 @@
 from peewee import SqliteDatabase, Model
 from peewee import IntegerField, CharField, PrimaryKeyField, TimestampField
 from pathlib import Path
-from configparser import ConfigParser
+import toml
 
-config = ConfigParser()
-config.read("config.ini", encoding="utf-8")
 
-db = SqliteDatabase(Path.cwd() / config.get('database', 'file'))
+config = toml.load("config.toml")
+db = SqliteDatabase(Path.cwd() / config.get('database').get('file'))
 
 
 class BaseModel(Model):

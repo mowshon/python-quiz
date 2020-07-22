@@ -7,8 +7,7 @@ from database import config
 from database import Question as DBQ
 from time import time
 import os
-from code2image.cls import Code2ImageBackground
-from io import BytesIO
+from highlight import Highlight
 
 
 class Question:
@@ -30,9 +29,6 @@ class Question:
         self.file_content = question_file.read().strip()
         self.structure = json.loads(self.file_content)
         self.load_from_json()
-
-        self.start_comment_with = config.get('highlight', 'start_comment_with')
-
         question_file.close()
 
     def load_from_json(self):
@@ -47,10 +43,32 @@ class Question:
 class QuestionWithCode(Question):
 
     code_filepath = None
+    start_comment_with = ''
+    show_title_in_code = False
+    language = 'python'
 
     def __init__(self, question_filepath, code_filepath):
         self.code_filepath = code_filepath
         super().__init__(question_filepath)
+
+        # Символ с которого нужно начинать комментарий
+        if 'start_comment_with' in self.structure.keys():
+            self.start_comment_with = self.structure['start_comment_with']
+        else:
+            self.start_comment_with = config.get('highlight').get('start_comment_with')
+
+        # Добавить заголовок вопроса в качестве первого комментария над кодом?
+        if 'show_title_in_code' in self.structure.keys():
+            self.show_title_in_code = self.structure['show_title_in_code']
+        else:
+            self.show_title_in_code = config.get('highlight').get('show_title_in_code')
+
+        # Язык программирования
+        if 'language' in self.structure.keys():
+            self.language = self.structure['language']
+        else:
+            self.language = config.get('highlight').get('language')
+
         self.code = self.load_code(code_filepath)
         self.checksum = hashlib.md5(f"{self.short_filepath}{self.file_content}{self.code}".encode()).hexdigest()
 
@@ -61,7 +79,7 @@ class QuestionWithCode(Question):
     @staticmethod
     def load_code(code_filepath):
         with open(code_filepath) as f:
-            code = f.read()
+            code = f.readlines()
 
         return code
 
@@ -70,49 +88,42 @@ class QuestionWithCode(Question):
         Стилизуем код из файла.
         :return: Изображение в бинарном виде.
         """
-        c2i = Code2ImageBackground(
-            code_bg=config.get('highlight', 'code_bg'),
-            img_bg=config.get('highlight', 'img_bg'),
-            shadow_dt=int(config.get('highlight', 'shadow_dt')),
-            shadow_color=config.get('highlight', 'shadow_color'),
+        code2image = Highlight(
+            self.language,
+            style=config.get('highlight').get('style'),
+            line_numbers=config.get('highlight').get('show_line_numbers'),
+            font_size=config.get('highlight').get('font_size'),
+            font_name=config.get('highlight').get('font_name'),
+            line_pad=config.get('highlight').get('line_pad'),
+            background_color=config.get('highlight').get('background_color'),
+            highlight_color=config.get('highlight').get('highlight_color'),
+            window_frame_color=config.get('highlight').get('window_frame_color'),
+            bg_from_color=tuple(config.get('highlight').get('bg_from_color')),
+            bg_to_color=tuple(config.get('highlight').get('bg_to_color')),
+            close_circle=config.get('highlight').get('close_circle'),
+            maximize_circle=config.get('highlight').get('maximize_circle'),
+            minimize_circle=config.get('highlight').get('minimize_circle')
         )
 
-        # Добавление нумерации строк
-        if int(config.get('highlight', 'show_line_numbers')):
-            content = self.add_line_number()
-        else:
-            content = f'{self.start_comment_with} {self.title}\n{self.code}'
+        image = code2image.to_macos_frame(
+            code2image.prepare_code(
+                self.code,
+                fake_line_numbers=config.get('highlight').get('show_fake_line_numbers'),
+                show_title_in_code=self.show_title_in_code,
+                title=self.title,
+                comment_char=self.start_comment_with
+            )
+        )
 
-        with BytesIO() as output:
-            img = c2i.highlight(content)
-            img.save(output, format='PNG')
-            data = output.getvalue()
-
-        return data
-
-    def add_line_number(self) -> str:
-        content = ''
-        lines = [f'{self.start_comment_with} {self.title}\n']
-        with open(self.code_filepath) as f:
-            lines += f.readlines()
-
-        total_numbers = len(str(len(lines)))
-        for n, line in enumerate(lines, start=1):
-            spaces = ' ' * (total_numbers - len(str(n)))
-            if len(lines) >= 4:
-                content += f'{spaces}{n}| {line}'
-            else:
-                content += line
-
-        return content
+        return code2image.to_bytes(image)
 
 
 class Quiz:
     def __init__(self):
         self.simple_questions = Path.cwd() / "questions"
         self.questions_with_code = Path.cwd() / "coding"
-        self.telebot = telebot.TeleBot(config.get('telegram', 'token'))
-        self.chat_id = config.get('telegram', 'chat_id')
+        self.telebot = telebot.TeleBot(config.get('telegram').get('token'))
+        self.chat_id = config.get('telegram').get('chat_id')
 
     def get_all_quiz(self) -> list:
         """

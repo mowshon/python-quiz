@@ -33,29 +33,51 @@
 - **start_comment_with** - начало комментария в коде в зависимости от языка программирования (для Python это #, для C++ это //).
 
 
-### Файл конфигурации config.ini
-```ini
+### Файл конфигурации config.toml
+```toml
 [database]
-file = quiz.db
+file = "quiz.db"
 
 [telegram]
-token = ENTER-HERE
-chat_id = -100
+token = "1306699297:AAE_DWtRIagEpZDEyTggkOxw6UbyDywWbhQ"
+chat_id = -1001399962208
 
 [highlight]
-code_bg = #243036
-img_bg = #5b81e3
-show_line_numbers = 1
-shadow_dt = 1
-shadow_color = #111111
-start_comment_with = #
+background_color = ""
+highlight_color = ""
+show_line_numbers = true
+show_fake_line_numbers = false
+show_title_in_code = true
+start_comment_with = "#"
+font_size = 16
+font_name = "Liberation Mono"
+line_pad = 5
+style = "manni"
+language = "python"
+
+window_frame_color = "#e2e1e3"
+bg_from_color = [48, 113, 227]
+bg_to_color = [27, 62, 122]
+close_circle = "#fa4b4b"
+maximize_circle = "#fab339"
+minimize_circle = "#2fc242"
 ```
 - **file** - файл базы данных SQLite;
 - **token** - токен от телеграм бота;
 - **chat_id** - ID чата где бот был добавлен;
-- **code_bg** - цвет фона для кода;
-- **img_bg** - цвет фона для изображения на которой будет наложена изображение кода;
+- **background_color** - цвета фона для стиля от pygments;
+- **highlight_color** - цвет ситаксиса для стиля от pygments;
 - **show_line_numbers** - показать нумерацию строк кода (если строк в коде меньше чем 3, то данный параметр игнорируется и становится False, даже если он True);
-- **shadow_dt** - добавить тень для изображения с кодом;
-- **shadow_color** - цвет тени;
+- **show_fake_line_numbers** - вставляет нумерацию строк сразу в исходный код (желательно указать в **show_line_numbers** = false);
+- **show_title_in_code** - вставить заголовок вопроса как первый комментарий в коде;
 - **start_comment_with** - заголовок опроса (title) будет добавлен как первый комментарий над предоставленным кодом из code.py
+- **font_size** - размер шрифта;
+- **font_name** - название шрифта;
+- **style** - название стиля для подсветки ситаксиса ([посмотреть все стили](https://github.com/pygments/pygments/tree/master/pygments/styles));
+- **language** - язык программирования на котором написан код из примеров (python, php, go, java... [посмотреть все](https://github.com/pygments/pygments/tree/master/pygments/lexers));
+- **window_frame_color** - цвет фона для рамки с кодом;
+- **bg_from_color** - начальный цвет градиента фона для изображения на которой будет наложена изображение кода;
+- **bg_to_color** - финальный цвет градиента фона для изображения на которой будет наложена изображение кода;
+- **close_circle** - цвет фона иконки закрытия;
+- **maximize_circle** - цвет фона иконки "развернуть";
+- **minimize_circle** - цвет фона иконки "свернуть".
