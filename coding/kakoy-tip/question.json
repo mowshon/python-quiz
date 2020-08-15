@@ -3,6 +3,6 @@
   "options": [
     "NameError: name 'python' is not defined", "<class 'tuple'>", "<class 'int'>", "<class 'list'>"
   ],
-  "correct_option_id": 2,
+  "correct_option_id": 3,
   "explanation": "Списки можно объявить при помощи квадратных скобок, а функция type() возвращает тип класса переданного объекта."
 }
